@@ -1,3 +1,5 @@
+from ai import ai
+from game_operations import game_operations
 # develeop the game and its functions here + 
 # 2d array which has 7 rows and 8 columns + 
 # 0 means empty, 1 means player 1, 2 means player 2 + 
@@ -10,60 +12,101 @@ class Game:
     """All functions related with the game will be defined here,
         including the board, the moves, the win conditions, etc.
         """
-        
     def __init__(self):
-        self.board = [[0 for i in range(8)] for j in range(7)]
-    
-    def make_move(self, player, column):
-        for i in range(6, -1, -1):  # start checking from the bottom, if the column is not full, drop the piece there
-            if self.board[i][column] == 0:
-                self.board[i][column] = player
-                return True     # return True if the move is successful
-        return False        # return False if the move is not successful, which means the column is full
-    
-    def get_possible_moves(self):
-        possible_moves = [idx  for idx, val in enumerate(self.board[0]) if val == 0]
-        return possible_moves       # return a list which contains the indices of the columns that are not full
-        
-    def check_win(self):
-        """check if there is four pieces in a row, column or diagonal. If there is, return the player number, else return 0"""
-        # check rows
-        for row in self.board:
-            for i in range(5):
-                if row[i] == row[i+1] == row[i+2] == row[i+3] != 0:
-                    return row[i]
-        
-        # check columns
-        for column in range(7):
-            for row in range(4):
-                if self.board[row][column] == self.board[row+1][column] == self.board[row+2][column] == self.board[row+3][column] != 0:
-                    return self.board[row][column]
-        
-        # check diagonals
-        for row in range(4):
-            for column in range(5):
-                if self.board[row][column] == self.board[row+1][column+1] == self.board[row+2][column+2] == self.board[row+3][column+3] != 0:
-                    return self.board[row][column]
-        
-        return 0    # return 0 if there is no winner
-            
-    def print_board(self):
+        self.ai = ai()
+        self.game_ops = game_operations()
+
+    def initilize_board(self):
+        board = [[0 for i in range(8)] for j in range(7)]
+        return board
+
+    def print_board(self, board):
         print('-'*25)
-        for row in self.board:
+        for row in board:
             for element in row:
                 print(element, end='  ')
             print()
+
+
+    def two_player_game(self):
+        board = self.initilize_board()
+        self.print_board(board)
+        turn = 1
+        winner = None      # no winner initially.
+        while winner == None:    # while there is no winner, keep playing
+            usr_input = input('Enter a column number to drop your piece: ')
+            board, status = self.game_ops.make_move(board, turn, int(usr_input))
+            if not status:
+                print('invalid input, try again')
+                continue
+            winner = self.game_ops.check_win(board)
+            turn = 2 if turn == 1 else 1
+            self.print_board(board)
+        print(f"Player {winner} wins!")
+
+
+    def one_player_game(self, ai):
+        heuristic_number = input('Select heuristic number between 1-3: ')
+        heuristic_function = self.ai.get_heuristic_func(heuristic_number)
+
+            
+        board = self.initilize_board()
+        self.print_board(board)
+        turn = 1
+        winner = None      # no winner initially.
+        while winner == None:    # while there is no winner, keep playing
+            if turn == 1:   # ai
+                eval, move = ai.minimax(board, True, heuristic_function, turn)
+                board, status = self.game_ops.make_move(board, turn, move)
+            else:   # plyr
+                usr_input = input('Enter a column number to drop your piece: ')
+                board, status = self.game_ops.make_move(board, turn, int(usr_input))
+                if not status:
+                    print('invalid input, try again')
+                    continue
+
+            winner = self.game_ops.check_win(board)
+            turn = 2 if turn == 1 else 1
+            self.print_board(board)
+        print(f"Player {winner} wins!")
     
+    def ai_vs_ai(self):
+        heuristic_number1 = input('Select heuristic number between 1-3 (AI 1): ')
+        heuristic_number2 = input('Select heuristic number between 1-3 (AI 2): ')
+        heuristic_function1 = self.ai.get_heuristic_func(heuristic_number1)
+        heuristic_function2 = self.ai.get_heuristic_func(heuristic_number2)
+        print(heuristic_function1)
+        print(heuristic_function2)
+        board = self.initilize_board()
+        self.print_board(board)
+        turn = 1
+        winner = None      # no winner initially.
+        while winner == None:    # while there is no winner, keep playing
+            if turn == 1:   # AI 1
+                eval, move = ai.minimax(board, True, heuristic_function1, turn)
+                board, status = self.game_ops.make_move(board, turn, move)
+            else:   # AI 2
+                eval, move = ai.minimax(board, True, heuristic_function2, turn)
+                board, status = self.game_ops.make_move(board, turn, move)
+
+            winner = self.game_ops.check_win(board)
+            turn = 2 if turn == 1 else 1
+            self.print_board(board)
+        print(f"Player {winner} wins!")
 
     def play(self):
-        self.print_board()
-        turn = 1
-        winner = 0      # no winner initially.
-        while winner == 0:    # while there is no winner, keep playing
-            usr_input = input('Enter a column number to drop your piece: ')
-            self.make_move(turn, int(usr_input))
-            winner = self.check_win()
-            turn = 2 if turn == 1 else 1
-            self.print_board()
-        print(f"Player {winner} wins!")
+        game_type = input("Select game mode:\n1.Two Player\n2.1vsAI\n3.AI1 vs AI2\n")
+        if game_type == '1':
+            self.two_player_game()
         
+        elif game_type == '2':
+            self.one_player_game(self.ai)
+        
+        elif game_type == '3':
+            self.ai_vs_ai()
+        else:
+            print('invalid input')
+            self.play()
+
+game = Game()
+game.play()
