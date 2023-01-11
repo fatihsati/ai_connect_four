@@ -1,79 +1,130 @@
 from game_operations import game_operations
-
+import config as cfg
 
 class ai:
 
     def __init__(self):
         self.game_ops = game_operations()
-
+        self.count = 0
 
     def get_heuristic_func(self, heuristic_input):
         if heuristic_input == '1':
             return self.h1
+        elif heuristic_input == '2':
+            return self.h2
 
-    def minimax(self, board, maximizing, heuristic, plyr, depth=0):
+    def minimax(self, board, maximizing, heuristic, plyr, alpha, beta, depth=0):
         
         opponent = 2 if plyr == 1 else 1
         # get heuristic
         # if 1, return 1
         # if 2, return -1
         # if 0 return 0
-        case = self.evaluation(board)
+        case = self.utility(board)
         if case == 1:   # plyr 1 wins
-            return 100, None
+            return cfg.utility_win, None
         if case == 2:   # plyr 2 wins
-            return -100, None
+            return cfg.utility_lose, None
         if case == 0:   # tie
-            return 50, None
+            return cfg.utility_tie, None
 
-        if depth == 4:
+        if depth == cfg.depth:  # 4680 nodes are expanding for the first move with depth = 4
             return heuristic(board, plyr, opponent), None
         
         # if game is not finished yet
 
         if maximizing:
-            max_eval = -1000
+            max_eval = cfg.minimax_max_eval
             best_move = None
             posbbile_moves = self.game_ops.get_possible_moves(board)
             for column in posbbile_moves:
+                self.count += 1
                 temp_board, status = self.game_ops.make_move(board, plyr, column)
-                eval = self.minimax(temp_board, False, heuristic, plyr, depth+1)[0]
-
+                eval, _ = self.minimax(temp_board, False, heuristic, plyr, alpha, beta, depth+1)
                 if eval > max_eval:
                     max_eval = eval
                     best_move = column
-                    
+                
+                if max_eval > beta:
+                    break   # prune
+                alpha = max(alpha, max_eval)
+
             return max_eval, best_move
     
         if not maximizing:
-            min_eval = 1000
+            min_eval = cfg.minimax_min_eval
             best_move = None
             
             posbbile_moves = self.game_ops.get_possible_moves(board)
             for column in  posbbile_moves:
+                self.count += 1
                 temp_board, status = self.game_ops.make_move(board, opponent, column)
-                eval = self.minimax(temp_board, True, heuristic, opponent, depth+1)[0]
-
+                eval, _ = self.minimax(temp_board, True, heuristic, opponent, alpha, beta, depth+1)
+                min_eval = min(min_eval, eval)
+                
                 if eval < min_eval:
                     min_eval = eval
                     best_move = column
+                if min_eval < alpha:
+                    break   # prune
+                beta = min(beta, min_eval)
+                
                     
             return min_eval, best_move
 
 
-    def evaluation(self, board):
+    def utility(self, board):
         # return 1 if plyr 1 wins,
         # return 2 if plyr 2 wins
         # else return 0
         return self.game_ops.check_win(board)
 
     def h1(self, board, plyr, opponent):
-        # return possible "4 in a row" for plyr
-        # count horizontal possibilities
-        possibilities_dict = {}
+        # count three in a row for plyr and opponent, return difference
+        plyres = [plyr, opponent]
+        counts = {} # initilize a dictionary for saving counts
+        for turn in plyres:
+            
+            count = 0
+            # horizontal
+            for row in board:
+                for i in range(6):
+                    if row[i] == row[i+1] == row[i+2] == turn:
+                        count += 1
+            # vertical
+            for col in range(8):
+                for row in range(5):
+                    if board[row][col] == board[row+1][col] == board[row+2][col] == turn:
+                        count += 1
+
+            # diagonal from left to right
+            for row in range(5):
+                for col in range(6):
+                    if board[row][col] == board[row+1][col+1] == board[row+2][col+2] == turn:
+                        count += 1
+            
+            # diagonal from right to left
+            for row in range(5):
+                for col in range(7, 1, -1):
+                    if board[row][col] == board[row+1][col-1] == board[row+2][col-2] == turn:
+                        count += 1
+            
+            counts[turn] = count
+        
+        heuristic_value = counts[plyr] - counts[opponent]
+        return heuristic_value
+            
+    def h2(self, board, plyr, opponent):
+        # return difference between possible "4 in a row" for plyr and opponent
+        
+        # key is the player number, value is the possibilities
+        possibilities_dict = {} # number of possibile 4 in a row for each plyr, 
+        
         plyers = [plyr, opponent]
         for turn in plyers:
             possibilities = 0
+            
+            # count horizontal possibilities
             for row in board:
                 for i in range(5):
                     # count horizontal possible 4 in a row, for plyr. plyr can place a tile if it is 0
@@ -82,7 +133,8 @@ class ai:
                             if row[i+2] == 0 or row[i+2] == turn:
                                 if row[i+3] == 0 or row[i+3] == turn:
                                     possibilities += 1
-
+                                    
+            # count vertical possibilities
             for col in range(8):  # each column
                 for row in range(4): # each row
                     if board[row][col] == 0 or board[row][col] == turn:
@@ -109,12 +161,15 @@ class ai:
                                 if board[row+3][column-3] == 0 or board[row+3][column-3] == turn:
                                     possibilities += 1
 
-            possibilities_dict[turn] = possibilities
+            possibilities_dict[turn] = possibilities        # save the possibilities for each plyr
 
+        # get the evaluation value by subtracting the possibilities of opponent from plyr
         heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent]
         return heuristic_value
 
-        
+    def h3(self, board, plyr, opponent):
+        pass
+    
     
     # def h2(self, board, plyr, opponent):
 

@@ -1,13 +1,7 @@
 from ai import ai
 from game_operations import game_operations
-# develeop the game and its functions here + 
-# 2d array which has 7 rows and 8 columns + 
-# 0 means empty, 1 means player 1, 2 means player 2 + 
+import config as cfg
 
-# player will select a column to drop the piece, the piece will drop to the lowest empty row + 
-# play will win if there are 4 pieces in a row, column or diagonal + 
-
-# get possible moves function will return a list of possible moves, which are the columns that are not full + 
 class Game:
     """All functions related with the game will be defined here,
         including the board, the moves, the win conditions, etc.
@@ -20,15 +14,15 @@ class Game:
         board = [[0 for i in range(8)] for j in range(7)]
         return board
 
-    def print_board(self, board):
-        print('-'*25)
+    def print_board(self, board):  
         for row in board:
             for element in row:
                 print(element, end='  ')
             print()
-
+        print('-'*25)
 
     def two_player_game(self):
+        print() # print empty line
         board = self.initilize_board()
         self.print_board(board)
         turn = 1
@@ -48,7 +42,7 @@ class Game:
     def one_player_game(self):
         heuristic_number = input('Select heuristic number between 1-3: ')
         heuristic_function = self.ai.get_heuristic_func(heuristic_number)
-
+        print() # print empty line
             
         board = self.initilize_board()
         self.print_board(board)
@@ -56,8 +50,10 @@ class Game:
         winner = None      # no winner initially.
         while winner == None:    # while there is no winner, keep playing
             if turn == 1:   # ai
-                eval, move = self.ai.minimax(board, True, heuristic_function, turn)
+                eval, move = self.ai.minimax(board, True, heuristic_function, turn, cfg.alpha, cfg.beta)
                 board, status = self.game_ops.make_move(board, turn, move)
+                print('AI move: ', move)
+
             else:   # plyr
                 usr_input = input('Enter a column number to drop your piece: ')
                 board, status = self.game_ops.make_move(board, turn, int(usr_input))
@@ -75,22 +71,27 @@ class Game:
         heuristic_number2 = input('Select heuristic number between 1-3 (AI 2): ')
         heuristic_function1 = self.ai.get_heuristic_func(heuristic_number1)
         heuristic_function2 = self.ai.get_heuristic_func(heuristic_number2)
-
+        print() # print empty line
+        
         board = self.initilize_board()
         self.print_board(board)
         turn = 1
         winner = None      # no winner initially.
         while winner == None:    # while there is no winner, keep playing
             if turn == 1:   # AI 1
-                eval, move = self.ai.minimax(board, True, heuristic_function1, turn)
+                eval, move = self.ai.minimax(board, True, heuristic_function1, turn, cfg.alpha, cfg.beta)
                 board, status = self.game_ops.make_move(board, turn, move)
+                print('AI 1 move: ', move)
+
             else:   # AI 2
-                eval, move = self.ai.minimax(board, True, heuristic_function2, turn)
+                eval, move = self.ai.minimax(board, True, heuristic_function2, turn, cfg.alpha, cfg.beta)
                 board, status = self.game_ops.make_move(board, turn, move)
+                print('AI 2 move: ', move)
 
             winner = self.game_ops.check_win(board)
             turn = 2 if turn == 1 else 1
             self.print_board(board)
+
         print(f"Player {winner} wins!")
 
     def play(self):
