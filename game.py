@@ -45,7 +45,7 @@ class Game:
         print(f"Player {winner} wins!")
 
 
-    def one_player_game(self, ai):
+    def one_player_game(self):
         heuristic_number = input('Select heuristic number between 1-3: ')
         heuristic_function = self.ai.get_heuristic_func(heuristic_number)
 
@@ -56,7 +56,7 @@ class Game:
         winner = None      # no winner initially.
         while winner == None:    # while there is no winner, keep playing
             if turn == 1:   # ai
-                eval, move = ai.minimax(board, True, heuristic_function, turn)
+                eval, move = self.ai.minimax(board, True, heuristic_function, turn)
                 board, status = self.game_ops.make_move(board, turn, move)
             else:   # plyr
                 usr_input = input('Enter a column number to drop your piece: ')
@@ -75,18 +75,17 @@ class Game:
         heuristic_number2 = input('Select heuristic number between 1-3 (AI 2): ')
         heuristic_function1 = self.ai.get_heuristic_func(heuristic_number1)
         heuristic_function2 = self.ai.get_heuristic_func(heuristic_number2)
-        print(heuristic_function1)
-        print(heuristic_function2)
+
         board = self.initilize_board()
         self.print_board(board)
         turn = 1
         winner = None      # no winner initially.
         while winner == None:    # while there is no winner, keep playing
             if turn == 1:   # AI 1
-                eval, move = ai.minimax(board, True, heuristic_function1, turn)
+                eval, move = self.ai.minimax(board, True, heuristic_function1, turn)
                 board, status = self.game_ops.make_move(board, turn, move)
             else:   # AI 2
-                eval, move = ai.minimax(board, True, heuristic_function2, turn)
+                eval, move = self.ai.minimax(board, True, heuristic_function2, turn)
                 board, status = self.game_ops.make_move(board, turn, move)
 
             winner = self.game_ops.check_win(board)
@@ -100,7 +99,7 @@ class Game:
             self.two_player_game()
         
         elif game_type == '2':
-            self.one_player_game(self.ai)
+            self.one_player_game()
         
         elif game_type == '3':
             self.ai_vs_ai()

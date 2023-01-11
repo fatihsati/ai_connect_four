@@ -1,5 +1,7 @@
 import unittest
+from ai import ai
 
+a = ai()
 
 test_1 = [[1, 0, 0, 0, 0, 0, 0, 0],
           [1, 0, 0, 0, 0, 0, 0, 0],
@@ -73,6 +75,17 @@ test_9 = [[0, 0, 0, 1, 2, 0, 0, 1],
           [0, 2, 0, 2, 1, 1, 1, 2],
           [2, 0, 0, 0, 1, 2, 1, 1]]
 
+test_10 = [[2, 1, 1, 1, 2, 1, 2, 1],
+          [0, 0, 2, 0, 0, 1, 0, 2],
+          [0, 1, 0, 0, 0, 0, 2, 1],
+          [1, 0, 0, 2, 1, 0, 0, 2],
+          [0, 0, 1, 0, 0, 2, 0, 0],
+          [0, 2, 0, 2, 1, 1, 1, 2],
+          [2, 0, 0, 0, 1, 2, 1, 1]]
+
+test_11 = [[1, 0, 0, 2, 0, 0, 0, 0]]
+
+
 def check_win(board):
         """check if there is four pieces in a row, column or diagonal. If there is, return the player number, else return 0"""
         # check rows
@@ -99,9 +112,10 @@ def check_win(board):
                 if board[row][column] == board[row+1][column-1] == board[row+2][column-2] == board[row+3][column-3] != 0:
                     return board[row][column]
 
-        return 0    # return 0 if there is no winner
+        if 0 not in board[0]: return 0 # if al
+        return None    # return 0 if there is no winner
 
-class GameWinTest(unittest.TestCase):
+class GameTest(unittest.TestCase):
 
     def test_vertical(self):
         self.assertEqual(check_win(test_1), 2)
@@ -118,6 +132,12 @@ class GameWinTest(unittest.TestCase):
         self.assertEqual(check_win(test_8), 1)
         self.assertEqual(check_win(test_9), 2)
 
+    def test_win_tie(self):
+        self.assertEqual(check_win(test_10), 0)
+    
+    def test_h1(self):
+        self.assertEqual(a.h1(test_9, 1, 0), 31)
         
+
 if __name__ == '__main__':
     unittest.main()

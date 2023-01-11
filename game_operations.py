@@ -40,4 +40,6 @@ class game_operations:
                 if board[row][column] == board[row+1][column-1] == board[row+2][column-2] == board[row+3][column-3] != 0:
                     return board[row][column]
 
+        # check tie
+        if 0 not in board[0]: return 0 # if al
         return None    # return 0 if there is no winner
