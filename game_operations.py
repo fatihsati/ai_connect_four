@@ -42,4 +42,4 @@ class game_operations:
 
         # check tie
         if 0 not in board[0]: return 0 # if al
-        return None    # return 0 if there is no winner
+        return None    # return NOne if game has not finished.

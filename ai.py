@@ -3,9 +3,12 @@ import config as cfg
 
 class ai:
 
-    def __init__(self):
+    def __init__(self, ai_number, heuristic_number):
         self.game_ops = game_operations()
-        self.count = 0
+        self.ai_number = ai_number
+        self.heuristic = self.get_heuristic_func(heuristic_number)
+        self.opponent_number= 2 if ai_number == 1 else 1
+        
 
     def get_heuristic_func(self, heuristic_input):
         if heuristic_input == '1':
@@ -13,7 +16,7 @@ class ai:
         elif heuristic_input == '2':
             return self.h2
 
-    def minimax(self, board, maximizing, heuristic, plyr, alpha, beta, depth=0):
+    def minimax(self, board, maximizing, plyr, alpha, beta, depth=0):
         
         opponent = 2 if plyr == 1 else 1
         # get heuristic
@@ -21,16 +24,18 @@ class ai:
         # if 2, return -1
         # if 0 return 0
         case = self.utility(board)
-        if case == 1:   # plyr 1 wins
+        if case == self.ai_number:   # plyr 1 wins
             return cfg.utility_win, None
-        if case == 2:   # plyr 2 wins
+
+        if case == self.opponent_number:   # plyr 2 wins
             return cfg.utility_lose, None
         if case == 0:   # tie
             return cfg.utility_tie, None
 
         if depth == cfg.depth:  # 4680 nodes are expanding for the first move with depth = 4
-            return heuristic(board, plyr, opponent), None
-        
+            evalutaion =  self.heuristic(board, plyr, opponent), None
+            # print(evalutaion[0])
+            return evalutaion
         # if game is not finished yet
 
         if maximizing:
@@ -38,10 +43,9 @@ class ai:
             best_move = None
             posbbile_moves = self.game_ops.get_possible_moves(board)
             for column in posbbile_moves:
-                self.count += 1
-                temp_board, status = self.game_ops.make_move(board, plyr, column)
-                eval, _ = self.minimax(temp_board, False, heuristic, plyr, alpha, beta, depth+1)
-                if eval > max_eval:
+                temp_board, _ = self.game_ops.make_move(board, plyr, column)
+                eval, _ = self.minimax(temp_board, False, plyr, alpha, beta, depth+1)
+                if eval >= max_eval:
                     max_eval = eval
                     best_move = column
                 
@@ -57,14 +61,14 @@ class ai:
             
             posbbile_moves = self.game_ops.get_possible_moves(board)
             for column in  posbbile_moves:
-                self.count += 1
-                temp_board, status = self.game_ops.make_move(board, opponent, column)
-                eval, _ = self.minimax(temp_board, True, heuristic, opponent, alpha, beta, depth+1)
+                temp_board, _ = self.game_ops.make_move(board, opponent, column)
+                eval, _ = self.minimax(temp_board, True, opponent, alpha, beta, depth+1)
                 min_eval = min(min_eval, eval)
                 
-                if eval < min_eval:
+                if eval <= min_eval:
                     min_eval = eval
                     best_move = column
+
                 if min_eval < alpha:
                     break   # prune
                 beta = min(beta, min_eval)
@@ -110,8 +114,8 @@ class ai:
                         count += 1
             
             counts[turn] = count
-        
         heuristic_value = counts[plyr] - counts[opponent]
+
         return heuristic_value
             
     def h2(self, board, plyr, opponent):
@@ -163,8 +167,10 @@ class ai:
 
             possibilities_dict[turn] = possibilities        # save the possibilities for each plyr
 
+        # print(possibilities_dict)
         # get the evaluation value by subtracting the possibilities of opponent from plyr
         heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent]
+
         return heuristic_value
 
     def h3(self, board, plyr, opponent):
