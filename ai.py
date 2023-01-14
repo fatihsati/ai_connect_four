@@ -15,6 +15,8 @@ class ai:
             return self.h1
         elif heuristic_input == '2':
             return self.h2
+        elif heuristic_input == '3':
+            return self.h3
 
     def minimax(self, board, maximizing, plyr, alpha, beta, depth=0):
         
@@ -173,10 +175,61 @@ class ai:
 
         return heuristic_value
 
+    def award_func(self, possible_moves, turn, possibilities):
+        for possibility in possible_moves:
+                a = possibility.count(turn)
+                b = possibility.count(0)
+
+                if a == 3 and b == 1:
+                    possibilities += 100
+                elif a == 2 and b == 2:
+                    possibilities += 10
+                elif a == 1 and b == 3:
+                    possibilities += 1
+        return possibilities
+
     def h3(self, board, plyr, opponent):
-        pass
-    
-    
-    # def h2(self, board, plyr, opponent):
+
+        possibilities_dict = {} # number of possibile 4 in a row for each plyr, 
+        
+        plyers = [plyr, opponent]
+
+        for turn in plyers:
+            possibilities = 0
+            
+            # count horizontal possibilities
+            horizontal_possibilities = []
+            for row in board:
+                for i in range(5):
+                    # count horizontal possible 4 in a row, for plyr. plyr can place a tile if it is 0
+                    horizontal_possibilities.append([row[i], row[i+1], row[i+2], row[i+3]])
+            
+            possibilities = self.award_func(horizontal_possibilities, turn, possibilities)
+
+            # count vertical possibilities
+            vertical_possibilities = []
+            for col in range(8):  # each column
+                for row in range(4): # each row
+                    vertical_possibilities.append([board[row][col], board[row+1][col], board[row+2][col], board[row+3][col]])
+            
+            possibilities = self.award_func(vertical_possibilities, turn, possibilities)
+                
+            # check diagonals
+            diagonal_possibilities = []
+            for row in range(4):
+                for column in range(5):
+                    diagonal_possibilities.append([board[row][column], board[row+1][column+1], board[row+2][column+2], board[row+3][column+3]])
+
+            possibilities = self.award_func(diagonal_possibilities, turn, possibilities)
+            # diagonal from right to left
+            inverse_diagonal_possibilities = []
+            for row in range(4):
+                for column in range(7, 2, -1):  # to check from right to left
+                    inverse_diagonal_possibilities.append([board[row][column], board[row+1][column-1], board[row+2][column-2], board[row+3][column-3]])
+            
+            possibilities = self.award_func(inverse_diagonal_possibilities, turn, possibilities)
+            possibilities_dict[turn] = possibilities
+        heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent]
+        return heuristic_value
 
         
