@@ -85,9 +85,9 @@ class ai:
         # else return 0
         return self.game_ops.check_win(board) # check if there is a winner
 
-    def h1(self, board, plyr, opponent):
+    def h1(self, board):
         # count three in a row for plyr and opponent, return difference
-        plyres = [plyr, opponent] # player list
+        plyres = [self.ai_number, self.opponent_number]
         counts = {} # initilize a dictionary for saving counts
         for turn in plyres: # iterate through players
             
@@ -102,13 +102,11 @@ class ai:
                 for row in range(5):
                     if board[row][col] == board[row+1][col] == board[row+2][col] == turn:
                         count += 1
-
             # diagonal from left to right
             for row in range(5):
                 for col in range(6):
                     if board[row][col] == board[row+1][col+1] == board[row+2][col+2] == turn:
                         count += 1
-            
             # diagonal from right to left
             for row in range(5):
                 for col in range(7, 1, -1):
@@ -116,17 +114,17 @@ class ai:
                         count += 1
             
             counts[turn] = count
-        heuristic_value = counts[plyr] - counts[opponent]
+        heuristic_value = counts[self.ai_number] - counts[self.opponent_number]
 
         return heuristic_value
             
-    def h2(self, board, plyr, opponent):
+    def h2(self, board):
         # return difference between possible "4 in a row" for plyr and opponent
         
         # key is the player number, value is the possibilities
         possibilities_dict = {} # number of possibile 4 in a row for each plyr, 
         
-        plyers = [plyr, opponent]
+        plyers = [self.ai_number, self.opponent_number]
         for turn in plyers:
             possibilities = 0
             
@@ -171,7 +169,7 @@ class ai:
 
         # print(possibilities_dict)
         # get the evaluation value by subtracting the possibilities of opponent from plyr
-        heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent]
+        heuristic_value = possibilities_dict[self.ai_number] - possibilities_dict[self.opponent_number]
 
         return heuristic_value
 
