@@ -4,18 +4,18 @@ import config as cfg
 class ai:
 
     def __init__(self, ai_number, heuristic_number):
-        self.game_ops = game_operations()
-        self.ai_number = ai_number
-        self.heuristic = self.get_heuristic_func(heuristic_number)
-        self.opponent_number= 2 if ai_number == 1 else 1
+        self.game_ops = game_operations()  # create game operations object
+        self.ai_number = ai_number # 1 or 2
+        self.heuristic = self.get_heuristic_func(heuristic_number) # get heuristic function
+        self.opponent_number= 2 if ai_number == 1 else 1 # get opponent number
         
 
-    def get_heuristic_func(self, heuristic_input):
-        if heuristic_input == '1':
+    def get_heuristic_func(self, heuristic_input): # get heuristic function
+        if heuristic_input == '1': # h1
             return self.h1
-        elif heuristic_input == '2':
+        elif heuristic_input == '2': # h2
             return self.h2
-        elif heuristic_input == '3':
+        elif heuristic_input == '3': # h3
             return self.h3
 
     def minimax(self, board, maximizing, plyr, alpha, beta, depth=0):
@@ -35,13 +35,13 @@ class ai:
             return cfg.utility_tie, None
 
         if depth == cfg.depth:  # 4680 nodes are expanding for the first move with depth = 4
-            evalutaion =  self.heuristic(board, plyr, opponent), None
+            evalutaion =  self.heuristic(board, plyr, opponent), None # calculate the evaluation value according to heuristic function
             # print(evalutaion[0])
-            return evalutaion
+            return evalutaion # return the evaluation value
         # if game is not finished yet
 
         if maximizing:
-            max_eval = cfg.minimax_max_eval
+            max_eval = cfg.minimax_max_eval 
             best_move = None
             posbbile_moves = self.game_ops.get_possible_moves(board)
             for column in posbbile_moves:
@@ -83,15 +83,15 @@ class ai:
         # return 1 if plyr 1 wins,
         # return 2 if plyr 2 wins
         # else return 0
-        return self.game_ops.check_win(board)
+        return self.game_ops.check_win(board) # check if there is a winner
 
     def h1(self, board, plyr, opponent):
         # count three in a row for plyr and opponent, return difference
-        plyres = [plyr, opponent]
+        plyres = [plyr, opponent] # player list
         counts = {} # initilize a dictionary for saving counts
-        for turn in plyres:
+        for turn in plyres: # iterate through players
             
-            count = 0
+            count = 0 # initialize count
             # horizontal
             for row in board:
                 for i in range(6):
@@ -176,60 +176,56 @@ class ai:
         return heuristic_value
 
     def award_func(self, possible_moves, turn, possibilities):
-        for possibility in possible_moves:
-                a = possibility.count(turn)
-                b = possibility.count(0)
-
-                if a == 3 and b == 1:
-                    possibilities += 100
-                elif a == 2 and b == 2:
-                    possibilities += 10
-                elif a == 1 and b == 3:
-                    possibilities += 1
-        return possibilities
+        for possibility in possible_moves: # for each possible sub-board with 4 places
+                a = possibility.count(turn) # count the number of tiles of plyr
+                b = possibility.count(0) # count the number of empty places
+                # award points for each possible 4 in a row
+                if a == 3 and b == 1:   # 3 tiles of plyr and 1 empty place
+                    possibilities += 100 # award 100 points
+                elif a == 2 and b == 2: # 2 tiles of plyr and 2 empty places
+                    possibilities += 10 # award 10 points
+                elif a == 1 and b == 3: # 1 tile of plyr and 3 empty places
+                    possibilities += 1 # award 1 point
+        return possibilities # return the total number of award 4 in a row
 
     def h3(self, board, plyr, opponent):
+        possibilities_dict = {} # number of possibile 4 in each direction for each plyr, 
+        plyers = [plyr, opponent] # list of plyrs
 
-        possibilities_dict = {} # number of possibile 4 in a row for each plyr, 
-        
-        plyers = [plyr, opponent]
-
-        for turn in plyers:
-            possibilities = 0
-            
+        for turn in plyers: # for each plyr
+             
+            possibilities = 0 # initialize the number of possibilities to 0
             # count horizontal possibilities
-            horizontal_possibilities = []
-            for row in board:
-                for i in range(5):
+            horizontal_possibilities = [] # list of possible 4 in a row in horizontal direction
+            for row in board: # for each row
+                for i in range(5): 
                     # count horizontal possible 4 in a row, for plyr. plyr can place a tile if it is 0
                     horizontal_possibilities.append([row[i], row[i+1], row[i+2], row[i+3]])
-            
-            possibilities = self.award_func(horizontal_possibilities, turn, possibilities)
-
+            possibilities = self.award_func(horizontal_possibilities, turn, possibilities) # award points for each possible 4 in a row
             # count vertical possibilities
-            vertical_possibilities = []
+            vertical_possibilities = [] # list of possible 4 in a row in vertical direction
             for col in range(8):  # each column
                 for row in range(4): # each row
-                    vertical_possibilities.append([board[row][col], board[row+1][col], board[row+2][col], board[row+3][col]])
+                    vertical_possibilities.append([board[row][col], board[row+1][col], board[row+2][col], board[row+3][col]]) # append the 4 places in a column
             
-            possibilities = self.award_func(vertical_possibilities, turn, possibilities)
+            possibilities = self.award_func(vertical_possibilities, turn, possibilities) # award points for each possible 4 in a row
                 
             # check diagonals
-            diagonal_possibilities = []
-            for row in range(4):
-                for column in range(5):
-                    diagonal_possibilities.append([board[row][column], board[row+1][column+1], board[row+2][column+2], board[row+3][column+3]])
+            diagonal_possibilities = [] # list of possible 4 in a row in diagonal direction
+            for row in range(4): # for each row
+                for column in range(5): # for each column
+                    diagonal_possibilities.append([board[row][column], board[row+1][column+1], board[row+2][column+2], board[row+3][column+3]]) # append the 4 places in a diagonal
 
-            possibilities = self.award_func(diagonal_possibilities, turn, possibilities)
+            possibilities = self.award_func(diagonal_possibilities, turn, possibilities) # award points for each possible 4 in a row
             # diagonal from right to left
-            inverse_diagonal_possibilities = []
-            for row in range(4):
+            inverse_diagonal_possibilities = [] # list of possible 4 in a row in inverse diagonal direction
+            for row in range(4): # for each row
                 for column in range(7, 2, -1):  # to check from right to left
-                    inverse_diagonal_possibilities.append([board[row][column], board[row+1][column-1], board[row+2][column-2], board[row+3][column-3]])
+                    inverse_diagonal_possibilities.append([board[row][column], board[row+1][column-1], board[row+2][column-2], board[row+3][column-3]]) # append the 4 places in a diagonal
             
-            possibilities = self.award_func(inverse_diagonal_possibilities, turn, possibilities)
-            possibilities_dict[turn] = possibilities
-        heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent]
-        return heuristic_value
+            possibilities = self.award_func(inverse_diagonal_possibilities, turn, possibilities) # award points for each possible 4 in a row
+            possibilities_dict[turn] = possibilities       # save the possibilities for each plyr
+        heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent] # calcuate the heuristic value for the current player
+        return heuristic_value 
 
         
