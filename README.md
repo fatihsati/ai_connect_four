@@ -17,5 +17,5 @@ Counts the number of possible "4 in a row" on the board.
 - [X] ai implementation with basics (utility function)
 - [X] h1
 - [X] h2
-- [ ] h3
-- [ ] Update Print board function to look fancy
+- [X] h3
+- [X] Update Print board function to look fancy
