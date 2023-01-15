@@ -1,4 +1,4 @@
-depth = 5
+depth = 7
 alpha = -100000
 beta = 100000
 utility_win = 1000

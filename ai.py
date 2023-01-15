@@ -35,7 +35,7 @@ class ai:
             return cfg.utility_tie, None
 
         if depth == cfg.depth:  # 4680 nodes are expanding for the first move with depth = 4
-            evalutaion =  self.heuristic(board, plyr, opponent), None # calculate the evaluation value according to heuristic function
+            evalutaion =  self.heuristic(board), None # calculate the evaluation value according to heuristic function
             # print(evalutaion[0])
             return evalutaion # return the evaluation value
         # if game is not finished yet
@@ -186,9 +186,9 @@ class ai:
                     possibilities += 1 # award 1 point
         return possibilities # return the total number of award 4 in a row
 
-    def h3(self, board, plyr, opponent):
+    def h3(self, board):
         possibilities_dict = {} # number of possibile 4 in each direction for each plyr, 
-        plyers = [plyr, opponent] # list of plyrs
+        plyers = [self.ai_number, self.opponent_number] # list of plyrs
 
         for turn in plyers: # for each plyr
              
@@ -223,7 +223,7 @@ class ai:
             
             possibilities = self.award_func(inverse_diagonal_possibilities, turn, possibilities) # award points for each possible 4 in a row
             possibilities_dict[turn] = possibilities       # save the possibilities for each plyr
-        heuristic_value = possibilities_dict[plyr] - possibilities_dict[opponent] # calcuate the heuristic value for the current player
+        heuristic_value = possibilities_dict[self.ai_number] - possibilities_dict[self.opponent_number] # calcuate the heuristic value for the current player
         return heuristic_value 
 
         
